@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, MessageCircle, User, Shield } from 'lucide-react';
+import { Home, MessageCircle, User, Shield, Bell } from 'lucide-react';
 import UserTypeIndicator from './UserTypeIndicator';
-
+import NotificationCenter from './NotificationCenter';
 
 const Header = ({ userType, user, onLogin, onSignup, onLogout, currentView, setCurrentView }) => {
   return (
@@ -53,6 +53,7 @@ const Header = ({ userType, user, onLogin, onSignup, onLogout, currentView, setC
 
           <div className="flex items-center space-x-4">
             <UserTypeIndicator userType={userType} />
+            <NotificationCenter />
             {user ? (
               <div className="flex items-center space-x-3">
                 <button 
@@ -91,7 +92,5 @@ const Header = ({ userType, user, onLogin, onSignup, onLogout, currentView, setC
     </header>
   );
 };
-
-
 
 export default Header;

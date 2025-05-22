@@ -7,6 +7,7 @@ import ProfilePanel from './components/ProfilePanel';
 import LoginModal from './components/modals/LoginModal';
 import SignupModal from './components/modals/SignupModal';
 import VerificationModal from './components/modals/VerificationModal';
+import NotificationCenter from './components/NotificationCenter';
 import "./App.css";
 
 const App = () => {
@@ -68,6 +69,7 @@ const App = () => {
             setShowVerification={setShowVerification} 
           />
         )}
+        <NotificationCenter />
       </main>
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLogin} />}
