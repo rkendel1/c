@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 const SignupModal = ({ onClose, onSignup }) => {
     const [formData, setFormData] = useState({
@@ -12,8 +13,9 @@ const SignupModal = ({ onClose, onSignup }) => {
       acceptTerms: false
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [jwtToken, setJwtToken] = useLocalStorage('jwtToken', '');
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
       if (formData.password !== formData.confirmPassword) {
         alert('Passwords do not match');
@@ -24,14 +26,32 @@ const SignupModal = ({ onClose, onSignup }) => {
         return;
       }
       
-      // Simulate signup - in real app, make API call
-      onSignup({
-        name: formData.name,
-        email: formData.email,
-        address: formData.address,
-        city: formData.city,
-        verified: false
-      });
+      // Send signup data to backend
+      try {
+        const response = await fetch('http://localhost:8000/api/signup/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            address: formData.address,
+            city: formData.city
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setJwtToken(data.token);
+          onSignup(data.user);
+        } else {
+          console.error('Failed to sign up');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
     };
   
     const handleChange = (field, value) => {
