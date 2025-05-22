@@ -17,7 +17,10 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         # Integrate ollama mistral for processing chat messages
         mistral = Mistral()
         response = mistral.process_message(serializer.validated_data['message'])
-        serializer.save(response=response)
+        if serializer.validated_data.get('anonymous', False):
+            serializer.save(response=response, user=None)
+        else:
+            serializer.save(response=response)
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
