@@ -6,6 +6,7 @@ from django.contrib.gis.db.models.functions import Distance
 from .models import ChatMessage, UserProfile, Conversation, Notification, Subscription
 from .serializers import ChatMessageSerializer, UserProfileSerializer, ConversationSerializer, NotificationSerializer, SubscriptionSerializer
 from ollama import Mistral
+from .embedding import create_embeddings
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all()
@@ -54,3 +55,19 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+class EmbeddingViewSet(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.get('data')
+        data_type = request.data.get('data_type')
+        if not data or not data_type:
+            return Response({"error": "Data and data_type are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            embeddings = create_embeddings(data, data_type)
+            return Response({"message": "Embeddings created successfully."}, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -25,3 +25,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ['id', 'user', 'topic', 'timestamp']
+
+class EmbeddingSerializer(serializers.Serializer):
+    data = serializers.ListField(
+        child=serializers.CharField(),
+        allow_empty=False
+    )
+    data_type = serializers.ChoiceField(choices=['text', 'image', 'audio'])
