@@ -4,7 +4,7 @@ from .models import ChatMessage, UserProfile, Conversation, Notification, Subscr
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ['id', 'user', 'message', 'timestamp']
+        fields = ['id', 'user', 'message', 'timestamp', 'anonymous']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
