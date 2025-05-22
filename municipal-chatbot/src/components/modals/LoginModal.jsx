@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 const LoginModal = ({ onClose, onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-  
-    const handleSubmit = (e) => {
+    const [jwtToken, setJwtToken] = useLocalStorage('jwtToken', '');
+
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      // Simulate login - in real app, make API call
-      onLogin({
-        name: 'John Doe',
-        email: email,
-        verified: false,
-        address: '123 Main St',
-        city: 'Springfield'
-      });
+      try {
+        const response = await fetch('http://localhost:8000/api/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setJwtToken(data.token);
+          onLogin(data.user);
+        } else {
+          console.error('Failed to login');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
     };
   
     return (
