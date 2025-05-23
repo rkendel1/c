@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { User } from 'lucide-react';
 import UserTypeIndicator from './UserTypeIndicator';
 
-
-
 const ProfilePanel = ({ user, setUser, userType, setShowVerification }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState(user);

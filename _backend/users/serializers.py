@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -20,10 +19,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    user_type = serializers.CharField(source='userprofile.user_type', read_only=True)  # P8d4d
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'name']
+        fields = ['id', 'username', 'name', 'user_type']
 
     def get_name(self, obj):
         return obj.first_name

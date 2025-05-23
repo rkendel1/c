@@ -123,7 +123,13 @@ class RegisterView(APIView):
         return Response({
             'message': 'User registered successfully.',
             'refresh': str(refresh),
-            'access': str(refresh.access_token)
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'name': user.get_full_name(),
+                'email': user.email,
+                'user_type': profile.user_type
+            }
         })
 
 
@@ -154,7 +160,7 @@ class LoginView(APIView):
                     'id': user.id,
                     'name': user.get_full_name(),
                     'email': user.email,
-                    'user_type': user_type
+                    'user_type': user.userprofile.user_type
                 }
             })
         else:
