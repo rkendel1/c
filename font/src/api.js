@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'https://127.0.0.1:8000/api'; // Fixed IP and removed trailing slash
+const baseURL = 'http://127.0.0.1:8000/api'; // Fixed IP and removed trailing slash
 
 const api = axios.create({
   baseURL,

@@ -41,8 +41,7 @@ const ChatInterface = ({ userType, user }) => {
     setError('');
 
     try {
-      const response = await api.post('/chat/', {
-        user: isAnonymous ? null : user?.id,
+      const response = await api.post('/chat/chatmessages/', {
         message: newMessage.content,
         anonymous: isAnonymous,
         user_type: userType

@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .models import ChatMessage, Conversation
 from .serializers import ChatMessageSerializer, ConversationSerializer
 from .embedding import create_embeddings
+from rest_framework.decorators import action
 
 import requests
 
@@ -30,13 +31,20 @@ def call_mistral(prompt):
         return f"Error contacting Mistral model: {str(e)}"
 
 
+
+
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [AllowAny]  # <-- Allow anonymous and authenticated users
+    permission_classes = [AllowAny]
 
-    @swagger_auto_schema(operation_description="Create a new chat message")
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     def perform_create(self, serializer):
         prompt = serializer.validated_data['message']
         response = call_mistral(prompt)
