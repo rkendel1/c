@@ -14,6 +14,7 @@ const ChatInterface = ({ userType, user }) => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [jwtToken, setJwtToken] = useLocalStorage('jwtToken', '');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -47,8 +48,9 @@ const ChatInterface = ({ userType, user }) => {
           'Authorization': `Bearer ${jwtToken}`
         },
         body: JSON.stringify({
-          user: user.id,
-          message: newMessage.content
+          user: isAnonymous ? null : user.id,
+          message: newMessage.content,
+          anonymous: isAnonymous
         })
       });
 
@@ -127,6 +129,15 @@ const ChatInterface = ({ userType, user }) => {
                 rows="1"
                 style={{ minHeight: '44px', maxHeight: '120px' }}
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={isAnonymous}
+                onChange={(e) => setIsAnonymous(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-blue-600"
+              />
+              <label className="text-sm text-gray-600">Send Anonymously</label>
             </div>
             <button
               onClick={handleSendMessage}

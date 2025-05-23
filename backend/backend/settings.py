@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'chatbot',
+    'subscription-notifications',
+    'channels',
+    'django.contrib.gis',
     'drf_yasg',
 ]
 
@@ -74,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'
 
 
 # Database
@@ -144,6 +148,15 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+  
 # OpenAPI/Swagger settings
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
