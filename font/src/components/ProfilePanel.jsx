@@ -12,6 +12,12 @@ const ProfilePanel = ({ user, setUser, userType, setShowVerification }) => {
       setUser(formData);
       setIsEditing(false);
     };
+
+    {user && (
+      <div className="mb-4">
+        <UserTypeIndicator userType={user.verified ? 'verified' : 'registered'} />
+      </div>
+    )}
   
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">

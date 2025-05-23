@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useMemo } from 'react';
+import { getUserType } from './utils/user';
 import useAuth from './hooks/useAuth';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
@@ -8,8 +10,8 @@ import ProfilePanel from './components/ProfilePanel';
 import LoginModal from './components/modals/LoginModal';
 import SignupModal from './components/modals/SignupModal';
 import VerificationModal from './components/modals/VerificationModal';
-import NotificationCenter from './components/NotificationCenter';
-import "./App.css";
+
+import './App.css';
 
 const App = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -27,13 +29,9 @@ const App = () => {
     authLoading
   } = useAuth();
 
-  // Derive user type from auth state
-  const getUserType = () => {
-    if (!user) return 'anon';
-    return user.verified ? 'verified' : 'registered';
-  };
+ 
 
-  const userType = getUserType();
+  const userType = useMemo(() => getUserType(user), [user]);
 
   const handleLogin = async (credentials) => {
     try {
@@ -42,7 +40,7 @@ const App = () => {
       setCurrentView('chat');
     } catch (err) {
       console.error('Login failed:', err);
-      throw err; // Re-throw to let modal handle error display
+      throw err;
     }
   };
 
@@ -53,13 +51,12 @@ const App = () => {
       setCurrentView('chat');
     } catch (err) {
       console.error('Signup failed:', err);
-      throw err; // Re-throw to let modal handle error display
+      throw err;
     }
   };
 
   const handleVerification = async (verificationData) => {
     try {
-      // Update user with verification status
       const updatedUser = { ...user, verified: true };
       updateUser(updatedUser);
       setShowVerification(false);
@@ -87,15 +84,12 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <Header
-        userType={userType}
-        user={user}
+    <div>
+      <Header 
+        user={user} 
         onLogin={() => setShowLogin(true)}
         onSignup={() => setShowSignup(true)}
         onLogout={handleLogout}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
       />
 
       <main className="pt-16">
@@ -104,13 +98,13 @@ const App = () => {
         )}
         
         {currentView === 'chat' && (
-          <ChatInterface userType={userType} user={user} />
+          <ChatInterface userType={userType} user={user} setCurrentView={setCurrentView} />
         )}
-        
+
         {currentView === 'services' && userType === 'verified' && (
           <ServicesPanel user={user} />
         )}
-        
+
         {currentView === 'profile' && isAuthenticated && (
           <ProfilePanel
             user={user}
@@ -119,9 +113,8 @@ const App = () => {
             onShowVerification={() => setShowVerification(true)}
           />
         )}
-        
-        <NotificationCenter />
       </main>
+
 
       {showLogin && (
         <LoginModal
@@ -129,14 +122,14 @@ const App = () => {
           onLogin={handleLogin}
         />
       )}
-      
+
       {showSignup && (
         <SignupModal
           onClose={() => setShowSignup(false)}
           onSignup={handleSignup}
         />
       )}
-      
+
       {showVerification && (
         <VerificationModal
           onClose={() => setShowVerification(false)}

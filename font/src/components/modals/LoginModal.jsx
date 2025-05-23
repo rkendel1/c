@@ -20,42 +20,47 @@ const LoginModal = ({ onClose, onLogin }) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
-
-    // Basic validation
+  
     if (!formData.email.trim() || !formData.password.trim()) {
       setErrorMessage('Please fill in all fields');
       setIsLoading(false);
       return;
     }
-
+  
     try {
-      // Use the onLogin handler from App which calls useAuth's login function
-      await onLogin({
-        email: formData.email,
-        password: formData.password
+      const response = await fetch('http://localhost:8000/api/users/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: formData.email,
+          password: formData.password
+        })
       });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.detail) {
+          throw new Error(errorData.detail);
+        } else {
+          throw new Error('Login failed');
+        }
+      }
+  
+      const data = await response.json();
+      const token = data.access;
+  
+      // Save the token
+      localStorage.setItem('jwtToken', token);
+  
+      // Optional: call onLogin if you want to do something after login
+      onLogin && onLogin(token);
+  
+      onClose(); // close modal on success
     } catch (err) {
       console.error('Login error:', err);
-      
-      // Handle different error types
-      if (err.response?.status === 401) {
-        setErrorMessage('Invalid email or password');
-      } else if (err.response?.data) {
-        const errorData = err.response.data;
-        if (typeof errorData === 'string') {
-          setErrorMessage(errorData);
-        } else if (errorData.detail) {
-          setErrorMessage(errorData.detail);
-        } else if (errorData.non_field_errors) {
-          setErrorMessage(errorData.non_field_errors[0]);
-        } else {
-          setErrorMessage('Login failed. Please try again.');
-        }
-      } else if (err.message) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage('Something went wrong. Please try again.');
-      }
+      setErrorMessage(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

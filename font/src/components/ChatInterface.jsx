@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import api from '../api';
 
+
 const ChatInterface = ({ userType, user }) => {
   const [messages, setMessages] = useState([
     {
@@ -111,6 +112,7 @@ const ChatInterface = ({ userType, user }) => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
+              
               <div>
                 <h2 className="font-semibold text-gray-900">Municipal Assistant</h2>
                 <p className="text-sm text-gray-500">

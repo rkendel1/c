@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     otp_code = models.CharField(max_length=6)
     status = models.CharField(max_length=50)
     location = gis_models.PointField(null=True, blank=True)
+    user_type = models.CharField(max_length=50, default='citizen') 
 
     def __str__(self):
         return f"{self.user.username} Profile"
