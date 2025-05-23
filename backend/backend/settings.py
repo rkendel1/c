@@ -41,8 +41,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'chatbot',
+    'subscription-notifications',
     'channels',
     'django.contrib.gis',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -146,7 +148,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Channel layers settings
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -154,4 +156,17 @@ CHANNEL_LAYERS = {
             'hosts': [('127.0.0.1', 6379)],
         },
     },
+  
+# OpenAPI/Swagger settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'DEFAULT_MODEL_RENDERING': 'example',
 }

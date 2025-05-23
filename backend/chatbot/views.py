@@ -7,6 +7,8 @@ from .models import ChatMessage, UserProfile, Conversation, Notification, Subscr
 from .serializers import ChatMessageSerializer, UserProfileSerializer, ConversationSerializer, NotificationSerializer, SubscriptionSerializer
 from ollama import Mistral
 from .embedding import create_embeddings
+from drf_yasg.utils import swagger_auto_schema
+
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all()
@@ -14,6 +16,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(operation_description="Create a new chat message")
     def perform_create(self, serializer):
         # Integrate ollama mistral for processing chat messages
         mistral = Mistral()
@@ -38,11 +41,25 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(distance=Distance('location', user_point)).order_by('distance')
         return queryset
 
+    @swagger_auto_schema(operation_description="Retrieve a user profile")
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(operation_description="Update a user profile")
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(operation_description="Delete a user profile")
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all()
@@ -71,3 +88,16 @@ class EmbeddingViewSet(viewsets.ViewSet):
             return Response({"message": "Embeddings created successfully."}, status=status.HTTP_201_CREATED)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(operation_description="Retrieve a conversation")
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(operation_description="Update a conversation")
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(operation_description="Delete a conversation")
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
