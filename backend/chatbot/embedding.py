@@ -4,13 +4,14 @@ import torch
 import torchaudio
 from PIL import Image
 import logging
-from transformers import CLIPProcessor, CLIPModel, VGGishModel
+from torchvggish import vggish
+from transformers import CLIPProcessor, CLIPModel
 
 # Load the pre-trained models
 text_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 image_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 image_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-audio_model = VGGishModel.from_pretrained("harritaylor/vggish")
+audio_model = vggish()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

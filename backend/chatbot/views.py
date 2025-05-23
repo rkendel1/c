@@ -1,13 +1,39 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.response import Response
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
-from .models import ChatMessage, UserProfile, Conversation, Notification, Subscription
-from .serializers import ChatMessageSerializer, UserProfileSerializer, ConversationSerializer, NotificationSerializer, SubscriptionSerializer
-from ollama import Mistral
-from .embedding import create_embeddings
 from drf_yasg.utils import swagger_auto_schema
+
+from .models import ChatMessage, UserProfile, Conversation, Notification, Subscription
+from .serializers import (
+    ChatMessageSerializer,
+    UserProfileSerializer,
+    ConversationSerializer,
+    NotificationSerializer,
+    SubscriptionSerializer
+)
+from .embedding import create_embeddings
+
+import requests
+
+
+def call_mistral(prompt):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "mistral",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=30
+        )
+        response.raise_for_status()
+        return response.json().get("response", "")
+    except requests.RequestException as e:
+        return f"Error contacting Mistral model: {str(e)}"
 
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
@@ -18,13 +44,13 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(operation_description="Create a new chat message")
     def perform_create(self, serializer):
-        # Integrate ollama mistral for processing chat messages
-        mistral = Mistral()
-        response = mistral.process_message(serializer.validated_data['message'])
+        prompt = serializer.validated_data['message']
+        response = call_mistral(prompt)
         if serializer.validated_data.get('anonymous', False):
             serializer.save(response=response, user=None)
         else:
             serializer.save(response=response)
+
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
@@ -67,11 +93,13 @@ class NotificationViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 class EmbeddingViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
@@ -82,7 +110,7 @@ class EmbeddingViewSet(viewsets.ViewSet):
         data_type = request.data.get('data_type')
         if not data or not data_type:
             return Response({"error": "Data and data_type are required."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             embeddings = create_embeddings(data, data_type)
             return Response({"message": "Embeddings created successfully."}, status=status.HTTP_201_CREATED)
@@ -100,4 +128,3 @@ class EmbeddingViewSet(viewsets.ViewSet):
     @swagger_auto_schema(operation_description="Delete a conversation")
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
