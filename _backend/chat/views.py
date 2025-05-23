@@ -12,25 +12,11 @@ from .embedding import create_embeddings
 from rest_framework.decorators import action
 
 import requests
+from .utils import call_llm_utility
 
 
 def call_mistral(prompt):
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "mistral",
-                "prompt": prompt,
-                "stream": False,
-            },
-            timeout=30
-        )
-        response.raise_for_status()
-        return response.json().get("response", "")
-    except requests.RequestException as e:
-        return f"Error contacting Mistral model: {str(e)}"
-
-
+    return call_llm_utility("mistral", prompt)
 
 
 class ChatMessageViewSet(viewsets.ModelViewSet):

@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from .models import SearchQuery
 from .serializers import SearchQuerySerializer
 import requests
+from chat.utils import call_llm_utility
 
 class SearchQueryViewSet(viewsets.ModelViewSet):
     queryset = SearchQuery.objects.all()
@@ -34,13 +35,4 @@ class SearchQueryViewSet(viewsets.ModelViewSet):
             return None
 
     def call_llm(self, query):
-        try:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={"model": "llm", "prompt": query, "stream": False},
-                timeout=30
-            )
-            response.raise_for_status()
-            return response.json().get("response", "")
-        except requests.RequestException as e:
-            return f"Error contacting LLM model: {str(e)}"
+        return call_llm_utility("llm", query)
