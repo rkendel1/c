@@ -42,7 +42,11 @@ INSTALLED_APPS = [
 
     # Custom apps
     'chatbot',
-    #'subscription-notifications',
+    'users',
+    'notifications',
+    'core',
+    'subscriptions',
+
 ]
 
 MIDDLEWARE = [

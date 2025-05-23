@@ -1,20 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import api from '../api';
 
 const ChatInterface = ({ userType, user }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'bot',
-      content: `Hello${user ? ` ${user.name}` : ''}! I'm your municipal assistant. I can help you with zoning questions, permit information, city regulations, and more. What would you like to know?`,
+      content: `Hello${user ? ` ${user.name || user.first_name}` : ''}! I'm your municipal assistant. I can help you with zoning questions, permit information, city regulations, and more. What would you like to know?`,
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [jwtToken, setJwtToken] = useLocalStorage('jwtToken', '');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -29,55 +29,76 @@ const ChatInterface = ({ userType, user }) => {
     if (!inputValue.trim()) return;
 
     const newMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       type: 'user',
-      content: inputValue,
+      content: inputValue.trim(),
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, newMessage]);
     setInputValue('');
     setIsTyping(true);
+    setError('');
 
-    // Send message to backend
     try {
-      const response = await fetch('http://localhost:8000/api/chatmessages/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify({
-          user: isAnonymous ? null : user.id,
-          message: newMessage.content,
-          anonymous: isAnonymous
-        })
+      const response = await api.post('/chat/', {
+        user: isAnonymous ? null : user?.id,
+        message: newMessage.content,
+        anonymous: isAnonymous,
+        user_type: userType
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const botResponse = {
-          id: messages.length + 2,
-          type: 'bot',
-          content: data.response,
-          timestamp: new Date()
-        };
+      const botResponse = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: response.data.response || response.data.message || 'I received your message.',
+        timestamp: new Date()
+      };
 
-        setMessages(prev => [...prev, botResponse]);
-      } else {
-        console.error('Failed to send message');
-      }
+      setMessages(prev => [...prev, botResponse]);
     } catch (error) {
-      console.error('Error:', error);
-    }
+      console.error('Chat error:', error);
+      
+      let errorMessage = 'Sorry, I encountered an error. Please try again.';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Please log in to continue chatting.';
+      } else if (error.response?.status === 429) {
+        errorMessage = 'Too many messages. Please wait a moment before sending another.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      }
 
-    setIsTyping(false);
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: errorMessage,
+        timestamp: new Date(),
+        isError: true
+      };
+
+      setMessages(prev => [...prev, errorResponse]);
+      setError(errorMessage);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const getUserStatusText = () => {
+    switch (userType) {
+      case 'verified':
+        return 'Verified • Full Access';
+      case 'registered':
+        return 'Registered • Enhanced Features';
+      default:
+        return 'Anonymous • Basic Features';
     }
   };
 
@@ -94,9 +115,7 @@ const ChatInterface = ({ userType, user }) => {
               <div>
                 <h2 className="font-semibold text-gray-900">Municipal Assistant</h2>
                 <p className="text-sm text-gray-500">
-                  {userType === 'verified' ? 'Verified • Full Access' : 
-                   userType === 'registered' ? 'Registered • Enhanced Features' : 
-                   'Anonymous • Basic Features'}
+                  {getUserStatusText()}
                 </p>
               </div>
             </div>
@@ -116,6 +135,13 @@ const ChatInterface = ({ userType, user }) => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="px-4 py-2 bg-red-50 border-t border-red-200">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="p-4 border-t border-gray-200 bg-white/50">
           <div className="flex items-end space-x-3">
@@ -128,25 +154,42 @@ const ChatInterface = ({ userType, user }) => {
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/80 backdrop-blur-sm"
                 rows="1"
                 style={{ minHeight: '44px', maxHeight: '120px' }}
+                disabled={isTyping}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={isAnonymous}
-                onChange={(e) => setIsAnonymous(e.target.checked)}
-                className="form-checkbox h-5 w-5 text-blue-600"
-              />
-              <label className="text-sm text-gray-600">Send Anonymously</label>
-            </div>
+            
+            {/* Anonymous checkbox - only show for registered/verified users */}
+            {userType !== 'anon' && (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="anonymous-checkbox"
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  disabled={isTyping}
+                />
+                <label htmlFor="anonymous-checkbox" className="text-sm text-gray-600 whitespace-nowrap">
+                  Send Anonymously
+                </label>
+              </div>
+            )}
+            
             <button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isTyping}
               className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
+          
+          {/* Usage info for anonymous users */}
+          {userType === 'anon' && (
+            <div className="mt-2 text-xs text-gray-500 text-center">
+              Anonymous users have limited access. Sign up for enhanced features!
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -161,12 +204,20 @@ const ChatMessage = ({ message, userType }) => {
     <div className={`flex ${isBot ? 'justify-start' : 'justify-end'}`}>
       <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
         isBot 
-          ? 'bg-gray-100 text-gray-900' 
+          ? message.isError 
+            ? 'bg-red-100 text-red-800 border border-red-200' 
+            : 'bg-gray-100 text-gray-900'
           : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
       }`}>
-        <p className="text-sm leading-relaxed">{message.content}</p>
-        <p className={`text-xs mt-2 ${isBot ? 'text-gray-500' : 'text-blue-100'}`}>
-          {message.timestamp.toLocaleTimeString()}
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+        <p className={`text-xs mt-2 ${
+          isBot 
+            ? message.isError 
+              ? 'text-red-600' 
+              : 'text-gray-500'
+            : 'text-blue-100'
+        }`}>
+          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
     </div>
