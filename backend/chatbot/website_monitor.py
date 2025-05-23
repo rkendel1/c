@@ -1,6 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from .embedding import create_embeddings
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def monitor_websites(urls):
     """
@@ -21,6 +26,7 @@ def monitor_websites(urls):
             diff = get_diff(previous_content, current_content)
             update_embeddings(diff)
             save_current_content(url, current_content)
+            logger.info(f"Updated embeddings for {url} with diff.")
 
 def load_previous_content(url):
     """
@@ -57,7 +63,7 @@ def update_embeddings(diff):
         diff (str): The diff between previous and current content.
     """
     # Create embeddings for the diff
-    embeddings = create_embeddings([diff])
+    embeddings = create_embeddings([diff], 'text')
     # Implement logic to update embeddings (e.g., save to a database)
     pass
 
