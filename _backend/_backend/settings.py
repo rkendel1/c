@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'chat',
     'users',
-    'local_rage',
+    'localrag',
 ]
 
 MIDDLEWARE = [

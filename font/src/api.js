@@ -119,7 +119,7 @@ api.interceptors.response.use(
 // Function to sync items to local RAG for searches
 export const syncToLocalRAG = async (query) => {
   try {
-    const response = await api.post('/local_rage/search/', { query });
+    const response = await api.post('/localrag/search/', { query });
     return response.data;
   } catch (error) {
     console.error('Error syncing to local RAG:', error);

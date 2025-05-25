@@ -21,5 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/chat/', include('chat.urls')),
     path('api/users/', include('users.urls')),
-    path('api/local_rage/', include('local_rage.urls')),
+    path('api/localrag/', include('localrag.urls')),
 ]
