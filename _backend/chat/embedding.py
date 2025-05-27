@@ -1,10 +1,10 @@
 import faiss
 from sentence_transformers import SentenceTransformer
 import torch
-import torchaudio
+#import torchaudio
 from PIL import Image
 import logging
-from torchvggish import vggish
+#from torchvggish import vggish
 from transformers import CLIPProcessor, CLIPModel
 
 # Load the pre-trained models
