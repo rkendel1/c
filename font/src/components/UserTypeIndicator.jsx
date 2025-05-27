@@ -22,6 +22,12 @@ const UserTypeIndicator = ({ userType }) => {
       color: 'text-green-600',
       bg: 'bg-green-100',
     },
+    citizen: {
+      icon: Shield,
+      label: 'Citizen',
+      color: 'text-purple-600',
+      bg: 'bg-purple-100',
+    },
     unknown: {
       icon: HelpCircle,
       label: 'Unknown',
