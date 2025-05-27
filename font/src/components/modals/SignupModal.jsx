@@ -56,6 +56,8 @@ const SignupModal = ({ onClose, onSignup }) => {
         address: formData.address,
         city: formData.city
       });
+      await fetchUser(); // Fetch user data after signup
+
     } catch (err) {
       console.error('Signup error:', err);
       

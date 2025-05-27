@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import api from '../api';
 
 const SubscriptionPanel = () => {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -7,62 +8,31 @@ const SubscriptionPanel = () => {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/subscriptions/', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setSubscriptions(data);
-        } else {
-          console.error('Failed to fetch subscriptions');
-        }
+        const response = await api.get('/subscriptions/');
+        setSubscriptions(response.data);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Failed to fetch subscriptions', error);
       }
     };
-
     fetchSubscriptions();
   }, []);
 
   const handleSubscribe = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/subscriptions/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-        },
-        body: JSON.stringify({ topic: newTopic })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSubscriptions(prev => [...prev, data]);
-        setNewTopic('');
-      } else {
-        console.error('Failed to subscribe');
-      }
+      const response = await api.post('/subscriptions/', { topic: newTopic });
+      setSubscriptions(prev => [...prev, response.data]);
+      setNewTopic('');
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Failed to subscribe', error);
     }
   };
 
   const handleUnsubscribe = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/subscriptions/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-        }
-      });
-      if (response.ok) {
-        setSubscriptions(prev => prev.filter(sub => sub.id !== id));
-      } else {
-        console.error('Failed to unsubscribe');
-      }
+      await api.delete(`/subscriptions/${id}/`);
+      setSubscriptions(prev => prev.filter(sub => sub.id !== id));
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Failed to unsubscribe', error);
     }
   };
 

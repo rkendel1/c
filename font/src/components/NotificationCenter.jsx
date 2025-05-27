@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import api from '../api';
 import { Bell } from 'lucide-react';
 
 const NotificationCenter = () => {
@@ -8,22 +9,12 @@ const NotificationCenter = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/notifications/', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setNotifications(data);
-        } else {
-          console.error('Failed to fetch notifications');
-        }
+        const response = await api.get('/notifications/');
+        setNotifications(response.data);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Failed to fetch notifications', error);
       }
     };
-
     fetchNotifications();
   }, []);
 

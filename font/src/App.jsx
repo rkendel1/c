@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { AuthProvider, useAuthContext } from './context/AuthContext';
 import { getUserType } from './utils/user';
-import useAuth from './hooks/useAuth';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import ChatInterface from './components/ChatInterface';
@@ -13,7 +12,7 @@ import VerificationModal from './components/modals/VerificationModal';
 
 import './App.css';
 
-const App = () => {
+const AppInner = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -27,9 +26,7 @@ const App = () => {
     updateUser,
     isAuthenticated,
     authLoading
-  } = useAuth();
-
- 
+  } = useAuthContext();
 
   const userType = useMemo(() => getUserType(user), [user]);
 
@@ -87,9 +84,12 @@ const App = () => {
     <div>
       <Header 
         user={user} 
+        userType={userType}
         onLogin={() => setShowLogin(true)}
         onSignup={() => setShowSignup(true)}
         onLogout={handleLogout}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
       />
 
       <main className="pt-16">
@@ -110,11 +110,10 @@ const App = () => {
             user={user}
             userType={userType}
             onUpdateUser={updateUser}
-            onShowVerification={() => setShowVerification(true)}
+            setShowVerification={setShowVerification}
           />
         )}
       </main>
-
 
       {showLogin && (
         <LoginModal
@@ -134,11 +133,16 @@ const App = () => {
         <VerificationModal
           onClose={() => setShowVerification(false)}
           onVerify={handleVerification}
-          user={user}
         />
       )}
     </div>
   );
 };
+
+const App = () => (
+  <AuthProvider>
+    <AppInner />
+  </AuthProvider>
+);
 
 export default App;

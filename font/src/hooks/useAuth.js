@@ -9,7 +9,7 @@ const useAuth = () => {
   // Login with email and password
   const login = async (email, password) => {
     try {
-      const response = await api.post('users/token/', {
+      const response = await api.post('users/login/', {
         email,
         password,
       });

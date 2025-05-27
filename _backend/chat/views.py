@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from .models import ChatMessage, Conversation
 from .serializers import ChatMessageSerializer, ConversationSerializer
-from .embedding import create_embeddings
+from .embedding_utils import EmbeddingManager
 from rest_framework.decorators import action
 
 import requests
@@ -59,7 +59,7 @@ class EmbeddingViewSet(viewsets.ViewSet):
             return Response({"error": "Data and data_type are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            embeddings = create_embeddings(data, data_type)
+            embeddings = embeddings(data, data_type)
             return Response({"message": "Embeddings created successfully."}, status=status.HTTP_201_CREATED)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
